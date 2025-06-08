@@ -1,28 +1,36 @@
-package vulnerable;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Scanner;
 
-public class Login {
+public class SQLInjectionVulnerableCode {
+
     public static void main(String[] args) {
-        String username = "admin";
-        String password = "' OR '1'='1";
-
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/users", "root", "root");
+            Scanner scanner = new Scanner(System.in);
+            
+            System.out.print("Enter username: ");
+            String username = scanner.nextLine();
+
+            // Vulnerable code - directly concatenating user input into SQL query
+            String query = "SELECT * FROM users WHERE username='" + username + "'";
+            
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mydatabase", "username", "password");
             Statement stmt = conn.createStatement();
-            String query = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'";
+            
             ResultSet rs = stmt.executeQuery(query);
-
-            if (rs.next()) {
-                System.out.println("Logged in!");
-            } else {
-                System.out.println("Invalid login.");
+            
+            while (rs.next()) {
+                System.out.println("User found: " + rs.getString("username"));
             }
-
-        } catch (Exception e) {
+            
+            rs.close();
+            stmt.close();
+            conn.close();
+            
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
